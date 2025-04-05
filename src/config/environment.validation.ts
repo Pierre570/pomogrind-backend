@@ -4,5 +4,5 @@ export default Joi.object({
   NODE_ENV: Joi.string()
     .valid('development', 'production', 'test')
     .default('development'),
-  DATABASE_PASSWORD: Joi.string().required(),
+  DATABASE_NAME: Joi.string().required(),
 });
