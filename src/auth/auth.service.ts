@@ -1,7 +1,12 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { CreateUserDto } from 'src/users/dtos/create-user.dto';
 import { UsersService } from 'src/users/users.service';
 import { HashingProvider } from './providers/hashing.provider';
+import { LoginUserDto } from './dtos/login-user.dto';
 
 @Injectable()
 export class AuthService {
@@ -22,6 +27,23 @@ export class AuthService {
     const user = await this.usersService.createUser(createUserDto);
 
     if (!user) throw new BadRequestException('User not created');
+
+    return user;
+  }
+
+  async login(loginUserDto: LoginUserDto) {
+    const user = await this.usersService.findOneByEmail(loginUserDto.email);
+
+    if (!user)
+      throw new UnauthorizedException('Email or password is incorrect');
+
+    const isPasswordValid = await this.hashingProvider.comparePassword(
+      loginUserDto.password,
+      user.password,
+    );
+
+    if (!isPasswordValid)
+      throw new UnauthorizedException('Email or password is incorrect');
 
     return user;
   }

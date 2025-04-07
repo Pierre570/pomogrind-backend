@@ -13,4 +13,14 @@ export class HashingProvider {
       throw new Error(`Failed to hash password: ${errorMessage}`);
     }
   }
+
+  async comparePassword(password: string, hashPassword: string) {
+    try {
+      return await bcrypt.compare(password, hashPassword);
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      throw new Error(`Failed to compare password: ${errorMessage}`);
+    }
+  }
 }
