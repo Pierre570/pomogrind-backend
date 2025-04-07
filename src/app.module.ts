@@ -5,9 +5,9 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import databaseConfig from './config/database.config';
 import environmentValidation from './config/environment.validation';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UserModule } from './user/user.module';
+import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
-import { User } from './user/entity/user.entity';
+import { User } from './users/entity/user.entity';
 
 const environment = process.env.NODE_ENV;
 
@@ -48,7 +48,7 @@ const environment = process.env.NODE_ENV;
         }
       },
     }),
-    UserModule,
+    UsersModule,
     AuthModule,
   ],
   controllers: [AppController],
