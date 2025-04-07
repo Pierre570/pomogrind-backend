@@ -7,7 +7,6 @@ import environmentValidation from './config/environment.validation';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 const environment = process.env.NODE_ENV;
-console.log('environment: ', environment);
 
 @Module({
   imports: [
