@@ -21,12 +21,29 @@ console.log('environment: ', environment);
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
-        return {
-          type: 'sqlite',
-          database: configService.get<string>('DATABASE_NAME'),
-          entities: [],
-          synchronize: true,
-        };
+        const isProduction = environment === 'production';
+        if (isProduction) {
+          return {
+            type: 'postgres',
+            host: 'db',
+            port: 5432,
+            username: configService.get<string>('POSTGRES_USER'),
+            password: configService.get<string>('POSTGRES_PASSWORD'),
+            database: configService.get<string>('POSTGRES_DB'),
+            entities: [],
+            synchronize: false,
+            ssl: {
+              rejectUnauthorized: false,
+            },
+          };
+        } else {
+          return {
+            type: 'sqlite',
+            database: configService.get<string>('DATABASE_NAME'),
+            entities: [],
+            synchronize: true,
+          };
+        }
       },
     }),
   ],
