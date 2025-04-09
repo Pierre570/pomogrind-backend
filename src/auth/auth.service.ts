@@ -8,6 +8,7 @@ import { UsersService } from 'src/users/users.service';
 import { HashingProvider } from './providers/hashing.provider';
 import { LoginUserDto } from './dtos/login-user.dto';
 import { JwtTokensProvider } from './providers/jwt-tokens.provider';
+import { RefreshTokenDto } from './dtos/refresh-token.dto';
 
 @Injectable()
 export class AuthService {
@@ -48,5 +49,9 @@ export class AuthService {
       throw new UnauthorizedException('Email or password is incorrect');
 
     return this.jwtTokensProvider.generateTokens(user);
+  }
+
+  async refreshToken(refreshTokenDto: RefreshTokenDto) {
+    return this.jwtTokensProvider.refreshToken(refreshTokenDto);
   }
 }

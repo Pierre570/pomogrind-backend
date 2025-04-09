@@ -1,9 +1,11 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import jwtConfig from 'src/config/jwt.config';
 import { ActiveUserData } from 'src/interfaces/payload-jwt.interface';
 import { User } from 'src/users/entity/user.entity';
+import { RefreshTokenDto } from '../dtos/refresh-token.dto';
+import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class JwtTokensProvider {
@@ -11,6 +13,7 @@ export class JwtTokensProvider {
     private readonly jwtService: JwtService,
     @Inject(jwtConfig.KEY)
     private readonly jwtConfiguration: ConfigType<typeof jwtConfig>,
+    private readonly usersService: UsersService,
   ) {}
 
   public async signToken<T>(userId: number, expiresIn: number, payload?: T) {
@@ -42,5 +45,19 @@ export class JwtTokensProvider {
       accessToken,
       refreshToken,
     };
+  }
+
+  public async refreshToken(refreshTokenDto: RefreshTokenDto) {
+    const { sub } = await this.jwtService.verifyAsync<
+      Pick<ActiveUserData, 'sub'>
+    >(refreshTokenDto.refreshToken, {
+      secret: this.jwtConfiguration.secret,
+    });
+
+    const user = await this.usersService.findOneById(sub);
+
+    if (!user) throw new BadRequestException('User not found');
+
+    return await this.generateTokens(user);
   }
 }
