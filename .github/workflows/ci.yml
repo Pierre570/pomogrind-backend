@@ -50,6 +50,9 @@ jobs:
     env:
       NODE_ENV: test
       DATABASE_NAME: test_db.sqlite
+      JWT_SECRET: eza
+      JWT_ACCESS_TOKEN_TTL: 3600
+      JWT_REFRESH_TOKEN_TTL: 86400
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
