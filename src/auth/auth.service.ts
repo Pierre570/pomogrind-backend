@@ -7,12 +7,14 @@ import { CreateUserDto } from 'src/users/dtos/create-user.dto';
 import { UsersService } from 'src/users/users.service';
 import { HashingProvider } from './providers/hashing.provider';
 import { LoginUserDto } from './dtos/login-user.dto';
+import { JwtTokensProvider } from './providers/jwt-tokens.provider';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly usersService: UsersService,
     private readonly hashingProvider: HashingProvider,
+    private readonly jwtTokensProvider: JwtTokensProvider,
   ) {}
 
   async register(createUserDto: CreateUserDto) {
@@ -28,7 +30,7 @@ export class AuthService {
 
     if (!user) throw new BadRequestException('User not created');
 
-    return user;
+    return this.jwtTokensProvider.generateTokens(user);
   }
 
   async login(loginUserDto: LoginUserDto) {
@@ -45,6 +47,6 @@ export class AuthService {
     if (!isPasswordValid)
       throw new UnauthorizedException('Email or password is incorrect');
 
-    return user;
+    return this.jwtTokensProvider.generateTokens(user);
   }
 }
