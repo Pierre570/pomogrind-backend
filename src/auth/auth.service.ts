@@ -54,4 +54,27 @@ export class AuthService {
   async refreshToken(refreshTokenDto: RefreshTokenDto) {
     return this.jwtTokensProvider.refreshToken(refreshTokenDto);
   }
+
+  async getUserData(userId: number) {
+    const user = await this.usersService.findOneById(userId);
+
+    if (!user) throw new BadRequestException('User not found');
+
+    return {
+      ...user,
+      password: undefined,
+    };
+  }
+
+  async deleteUser(userId: number) {
+    const user = await this.usersService.findOneById(userId);
+
+    if (!user) throw new BadRequestException('User not found');
+
+    await this.usersService.deleteUser(userId);
+
+    return {
+      message: 'User deleted successfully',
+    };
+  }
 }
