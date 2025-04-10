@@ -34,9 +34,6 @@ export class JwtTokensProvider {
       this.signToken<Partial<ActiveUserData>>(
         user.id,
         this.jwtConfiguration.accessTokenTtl,
-        {
-          email: user.email,
-        },
       ),
       this.signToken(user.id, this.jwtConfiguration.refreshTokenTtl),
     ]);
