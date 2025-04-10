@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -41,5 +42,10 @@ export class AuthController {
   @Get('me')
   getUserData(@ActiveUser() user: ActiveUserData) {
     return this.authService.getUserData(user.sub);
+  }
+
+  @Delete()
+  deleteUser(@ActiveUser() user: ActiveUserData) {
+    return this.authService.deleteUser(user.sub);
   }
 }
