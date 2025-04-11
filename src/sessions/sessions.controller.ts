@@ -30,4 +30,12 @@ export class SessionsController {
   ) {
     return this.sessionsService.pauseSession(sessionId, user.sub);
   }
+
+  @Post('/:sessionId/resume')
+  resumeSession(
+    @Param('sessionId', ParseIntPipe) sessionId: number,
+    @ActiveUser() user: ActiveUserData,
+  ) {
+    return this.sessionsService.resumeSession(sessionId, user.sub);
+  }
 }

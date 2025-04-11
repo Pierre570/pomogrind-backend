@@ -94,4 +94,18 @@ export class SessionsService {
       return await this.sessionsDbProvider.saveSession(session);
     } else throw new BadRequestException('Session is not active');
   }
+
+  async resumeSession(sessionId: number, userId: number) {
+    const user = await this.usersService.findOneById(userId);
+    if (!user) throw new BadRequestException('User not found');
+    const session = await this.sessionsDbProvider.findOneById(sessionId);
+    if (!session) throw new BadRequestException('Session not found');
+    if (session.user.id !== userId)
+      throw new BadRequestException('Unauthorized');
+    if (session.status === 'paused') {
+      session.status = 'active';
+      session.lastPauseDate = new Date();
+      return await this.sessionsDbProvider.saveSession(session);
+    } else throw new BadRequestException('Session is not paused');
+  }
 }
