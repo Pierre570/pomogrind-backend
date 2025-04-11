@@ -48,9 +48,9 @@ export class SessionsService {
 
           activeSession.timeLeft = updatedTimeLeft;
 
-          return activeSession;
+          return { ...activeSession, user: undefined };
         } else {
-          return activeSession;
+          return { ...activeSession, user: undefined };
         }
       } else {
         activeSession.status = 'abandoned';
