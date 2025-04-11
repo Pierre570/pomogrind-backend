@@ -13,6 +13,8 @@ import { JwtModule } from '@nestjs/jwt';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthenticationGuard } from './auth/guards/authentication/authentication.guard';
 import { AccessTokenGuard } from './auth/guards/access-token/access-token.guard';
+import { SessionsModule } from './sessions/sessions.module';
+import { Session } from './sessions/entity/session.entity';
 
 const environment = process.env.NODE_ENV;
 
@@ -47,7 +49,7 @@ const environment = process.env.NODE_ENV;
           return {
             type: 'sqlite',
             database: configService.get<string>('DATABASE_NAME'),
-            entities: [User],
+            entities: [User, Session],
             synchronize: true,
           };
         }
@@ -57,6 +59,7 @@ const environment = process.env.NODE_ENV;
     AuthModule,
     ConfigModule.forFeature(jwtConfig),
     JwtModule.registerAsync(jwtConfig.asProvider()),
+    SessionsModule,
   ],
   controllers: [AppController],
   providers: [

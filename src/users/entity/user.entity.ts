@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Session } from 'src/sessions/entity/session.entity';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class User {
@@ -26,4 +27,7 @@ export class User {
     nullable: false,
   })
   name: string;
+
+  @OneToMany(() => Session, (session) => session.user)
+  sessions: Session[];
 }
