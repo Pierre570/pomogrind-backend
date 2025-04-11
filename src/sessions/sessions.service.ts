@@ -32,9 +32,9 @@ export class SessionsService {
       await this.sessionsDbProvider.findActiveSession(userId);
     if (activeSession) {
       if (
-        activeSession.status === 'active' ||
-        (activeSession.status === 'paused' &&
-          this.isSessionOver(activeSession) === false)
+        (activeSession.status === 'active' ||
+          activeSession.status === 'paused') &&
+        this.isSessionOver(activeSession) === false
       ) {
         if (activeSession.status === 'active') {
           const now = Date.now();
