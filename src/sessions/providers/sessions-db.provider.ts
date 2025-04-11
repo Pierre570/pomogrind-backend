@@ -23,8 +23,12 @@ export class SessionsDbProvider {
     });
   }
 
-  saveSession(session: Session) {
-    return this.sessionsRepository.save(session);
+  async saveSession(session: Session) {
+    const savedSession = await this.sessionsRepository.save(session);
+    return {
+      ...savedSession,
+      user: undefined,
+    };
   }
 
   async createSession(startSessionDto: StartSessionDto, user: User) {
@@ -34,7 +38,11 @@ export class SessionsDbProvider {
       timeLeft: startSessionDto.duration,
     });
 
-    return this.sessionsRepository.save(session);
+    const savedSession = await this.sessionsRepository.save(session);
+    return {
+      ...savedSession,
+      user: undefined,
+    };
   }
 
   async findOneById(id: number) {
