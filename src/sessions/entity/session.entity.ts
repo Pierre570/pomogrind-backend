@@ -23,21 +23,26 @@ export class Session {
 
   @Column({
     type: 'int',
+    nullable: true,
   })
   duration: number;
 
   @Column({
     type: 'int',
+    nullable: true,
   })
   effectiveDuration: number;
 
   @Column({
     type: 'int',
+    nullable: true,
   })
   timeLeft: number;
 
   @Column({
     type: 'datetime',
+    default: () => 'CURRENT_TIMESTAMP',
+    nullable: true,
   })
   lastCheckDate: Date;
 
@@ -56,16 +61,19 @@ export class Session {
 
   @Column({
     type: 'boolean',
+    default: false,
   })
   isFinished: boolean;
 
   @Column({
     type: 'boolean',
+    default: false,
   })
   isPaused: boolean;
 
   @Column({
     type: 'int',
+    default: 0,
   })
   xpEarned: number;
 }
