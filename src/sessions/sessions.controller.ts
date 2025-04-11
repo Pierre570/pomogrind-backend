@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Param, ParseIntPipe, Post } from '@nestjs/common';
 import { StartSessionDto } from './dtos/start-session.dto';
 import { SessionsService } from './sessions.service';
 import { ActiveUser } from 'src/auth/decorators/active-user.decorator';
@@ -13,5 +13,13 @@ export class SessionsController {
     @ActiveUser() user: ActiveUserData,
   ) {
     return this.sessionsService.startSession(startSessionDto, user.sub);
+  }
+
+  @Post('/:sessionId/stop')
+  stopSession(
+    @Param('sessionId', ParseIntPipe) sessionId: number,
+    @ActiveUser() user: ActiveUserData,
+  ) {
+    return this.sessionsService.stopSession(sessionId, user.sub);
   }
 }

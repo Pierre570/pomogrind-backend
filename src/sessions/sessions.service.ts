@@ -69,4 +69,36 @@ export class SessionsService {
       },
     });
   }
+
+  async stopSession(sessionId: number, userId: number) {
+    const user = await this.usersService.findOneById(userId);
+    if (!user) throw new Error('User not found');
+
+    const session = await this.findOneById(sessionId);
+
+    if (!session) throw new Error('Session not found');
+    if (session.user.id !== userId) throw new Error('Unauthorized');
+    if (session.status === 'finished')
+      throw new Error('Session already finished');
+
+    const start = new Date(session.startDate).getTime();
+    const now = Date.now();
+    const durationMs = session.duration * 1000;
+
+    if (now >= start + durationMs) {
+      session.status = 'finished';
+      session.finishDate = new Date();
+      session.isFinished = true;
+      return await this.sessionsRepository.save(session);
+    } else throw new Error('Session is still active');
+  }
+
+  async findOneById(id: number) {
+    return await this.sessionsRepository.findOne({
+      where: { id },
+      relations: {
+        user: true,
+      },
+    });
+  }
 }
