@@ -15,6 +15,7 @@ export class SessionsService {
     const { startDate, duration, isFinished } = session;
 
     if (isFinished) return true;
+    if (session.status === 'paused') return false;
 
     const start = new Date(startDate).getTime();
     const now = Date.now();
@@ -31,10 +32,26 @@ export class SessionsService {
       await this.sessionsDbProvider.findActiveSession(userId);
     if (activeSession) {
       if (
-        activeSession.status === 'active' &&
-        this.isSessionOver(activeSession) === false
+        activeSession.status === 'active' ||
+        (activeSession.status === 'paused' &&
+          this.isSessionOver(activeSession) === false)
       ) {
-        return activeSession;
+        if (activeSession.status === 'active') {
+          const now = Date.now();
+          const lastPause = new Date(activeSession.lastPauseDate).getTime();
+          const elapsedSeconds = Math.floor((now - lastPause) / 1000);
+
+          const updatedTimeLeft = Math.max(
+            activeSession.timeLeft - elapsedSeconds,
+            0,
+          );
+
+          activeSession.timeLeft = updatedTimeLeft;
+
+          return activeSession;
+        } else {
+          return activeSession;
+        }
       } else {
         activeSession.status = 'abandoned';
         activeSession.finishDate = new Date();
