@@ -1,15 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { StartSessionDto } from './dtos/start-session.dto';
-import { InjectRepository } from '@nestjs/typeorm';
 import { Session } from './entity/session.entity';
-import { In, Repository } from 'typeorm';
 import { UsersService } from 'src/users/users.service';
-import { User } from 'src/users/entity/user.entity';
+import { SessionsDbProvider } from './providers/sessions-db.provider';
 
 @Injectable()
 export class SessionsService {
   constructor(
-    @InjectRepository(Session) private sessionsRepository: Repository<Session>,
+    private readonly sessionsDbProvider: SessionsDbProvider,
     private readonly usersService: UsersService,
   ) {}
 
@@ -29,7 +27,8 @@ export class SessionsService {
     const user = await this.usersService.findOneById(userId);
     if (!user) throw new Error('User not found');
 
-    const activeSession = await this.findActiveSession(userId);
+    const activeSession =
+      await this.sessionsDbProvider.findActiveSession(userId);
     if (activeSession) {
       if (
         activeSession.status === 'active' &&
@@ -40,41 +39,23 @@ export class SessionsService {
         activeSession.status = 'abandoned';
         activeSession.finishDate = new Date();
         activeSession.isFinished = true;
-        await this.sessionsRepository.save(activeSession);
+        await this.sessionsDbProvider.saveSession(activeSession);
 
-        return await this.createSession(startSessionDto, user);
+        return await this.sessionsDbProvider.createSession(
+          startSessionDto,
+          user,
+        );
       }
     } else {
-      return await this.createSession(startSessionDto, user);
+      return await this.sessionsDbProvider.createSession(startSessionDto, user);
     }
-  }
-
-  async createSession(startSessionDto: StartSessionDto, user: User) {
-    const session = this.sessionsRepository.create({
-      user,
-      ...startSessionDto,
-    });
-
-    return this.sessionsRepository.save(session);
-  }
-
-  async findActiveSession(userId: number) {
-    return this.sessionsRepository.findOne({
-      where: {
-        user: { id: userId },
-        status: In(['active', 'paused']),
-      },
-      order: {
-        startDate: 'DESC',
-      },
-    });
   }
 
   async stopSession(sessionId: number, userId: number) {
     const user = await this.usersService.findOneById(userId);
     if (!user) throw new Error('User not found');
 
-    const session = await this.findOneById(sessionId);
+    const session = await this.sessionsDbProvider.findOneById(sessionId);
 
     if (!session) throw new Error('Session not found');
     if (session.user.id !== userId) throw new Error('Unauthorized');
@@ -89,16 +70,7 @@ export class SessionsService {
       session.status = 'finished';
       session.finishDate = new Date();
       session.isFinished = true;
-      return await this.sessionsRepository.save(session);
+      return await this.sessionsDbProvider.saveSession(session);
     } else throw new Error('Session is still active');
-  }
-
-  async findOneById(id: number) {
-    return await this.sessionsRepository.findOne({
-      where: { id },
-      relations: {
-        user: true,
-      },
-    });
   }
 }
