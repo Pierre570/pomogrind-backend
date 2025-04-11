@@ -31,6 +31,7 @@ export class SessionsDbProvider {
     const session = this.sessionsRepository.create({
       user,
       ...startSessionDto,
+      timeLeft: startSessionDto.duration,
     });
 
     return this.sessionsRepository.save(session);

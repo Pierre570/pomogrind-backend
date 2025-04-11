@@ -47,6 +47,12 @@ export class Session {
   lastCheckDate: Date;
 
   @Column({
+    type: 'datetime',
+    default: () => 'CURRENT_TIMESTAMP',
+  })
+  lastPauseDate: Date;
+
+  @Column({
     type: 'varchar',
     length: 96,
     nullable: false,

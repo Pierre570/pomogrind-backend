@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { StartSessionDto } from './dtos/start-session.dto';
 import { Session } from './entity/session.entity';
 import { UsersService } from 'src/users/users.service';
@@ -72,5 +72,26 @@ export class SessionsService {
       session.isFinished = true;
       return await this.sessionsDbProvider.saveSession(session);
     } else throw new Error('Session is still active');
+  }
+
+  async pauseSession(sessionId: number, userId: number) {
+    const user = await this.usersService.findOneById(userId);
+    if (!user) throw new BadRequestException('User not found');
+
+    const session = await this.sessionsDbProvider.findOneById(sessionId);
+    if (!session) throw new BadRequestException('Session not found');
+    if (session.user.id !== userId)
+      throw new BadRequestException('Unauthorized');
+    if (session.status === 'active') {
+      session.status = 'paused';
+      const now = new Date();
+      const lastPause = new Date(session.lastPauseDate);
+      const elapsedSeconds = Math.floor(
+        (now.getTime() - lastPause.getTime()) / 1000,
+      );
+      session.timeLeft = Math.max(session.timeLeft - elapsedSeconds, 0);
+      session.lastCheckDate = new Date();
+      return await this.sessionsDbProvider.saveSession(session);
+    } else throw new BadRequestException('Session is not active');
   }
 }

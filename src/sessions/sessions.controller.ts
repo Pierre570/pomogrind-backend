@@ -22,4 +22,12 @@ export class SessionsController {
   ) {
     return this.sessionsService.stopSession(sessionId, user.sub);
   }
+
+  @Post('/:sessionId/pause')
+  pauseSession(
+    @Param('sessionId', ParseIntPipe) sessionId: number,
+    @ActiveUser() user: ActiveUserData,
+  ) {
+    return this.sessionsService.pauseSession(sessionId, user.sub);
+  }
 }
