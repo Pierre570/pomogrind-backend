@@ -25,7 +25,7 @@ export class SessionsService {
 
   async startSession(startSessionDto: StartSessionDto, userId: number) {
     const user = await this.usersService.findOneById(userId);
-    if (!user) throw new Error('User not found');
+    if (!user) throw new BadRequestException('User not found');
 
     const activeSession =
       await this.sessionsDbProvider.findActiveSession(userId);
@@ -53,14 +53,15 @@ export class SessionsService {
 
   async stopSession(sessionId: number, userId: number) {
     const user = await this.usersService.findOneById(userId);
-    if (!user) throw new Error('User not found');
+    if (!user) throw new BadRequestException('User not found');
 
     const session = await this.sessionsDbProvider.findOneById(sessionId);
 
-    if (!session) throw new Error('Session not found');
-    if (session.user.id !== userId) throw new Error('Unauthorized');
+    if (!session) throw new BadRequestException('Session not found');
+    if (session.user.id !== userId)
+      throw new BadRequestException('Unauthorized');
     if (session.status === 'finished')
-      throw new Error('Session already finished');
+      throw new BadRequestException('Session already finished');
 
     const start = new Date(session.startDate).getTime();
     const now = Date.now();
@@ -71,7 +72,7 @@ export class SessionsService {
       session.finishDate = new Date();
       session.isFinished = true;
       return await this.sessionsDbProvider.saveSession(session);
-    } else throw new Error('Session is still active');
+    } else throw new BadRequestException('Session is still active');
   }
 
   async pauseSession(sessionId: number, userId: number) {
