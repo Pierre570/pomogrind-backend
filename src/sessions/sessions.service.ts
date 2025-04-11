@@ -108,7 +108,7 @@ export class SessionsService {
         (now.getTime() - lastPause.getTime()) / 1000,
       );
       session.timeLeft = Math.max(session.timeLeft - elapsedSeconds, 0);
-      session.lastCheckDate = new Date();
+      session.lastPauseDate = new Date();
       return await this.sessionsDbProvider.saveSession(session);
     } else throw new BadRequestException('Session is not active');
   }
@@ -125,5 +125,60 @@ export class SessionsService {
       session.lastPauseDate = new Date();
       return await this.sessionsDbProvider.saveSession(session);
     } else throw new BadRequestException('Session is not paused');
+  }
+
+  async checkSession(sessionId: number, userId: number) {
+    const user = await this.usersService.findOneById(userId);
+    if (!user) throw new BadRequestException('User not found');
+
+    const session = await this.sessionsDbProvider.findOneById(sessionId);
+    if (!session) throw new BadRequestException('Session not found');
+
+    if (session.user.id !== userId) {
+      throw new BadRequestException('Unauthorized');
+    }
+
+    if (session.status !== 'active' || session.isFinished) {
+      throw new BadRequestException('Session is not active');
+    }
+
+    const now = new Date();
+    const lastCheck = new Date(session.lastCheckDate);
+    const secondsSinceLastCheck = Math.floor(
+      (now.getTime() - lastCheck.getTime()) / 1000,
+    );
+
+    if (secondsSinceLastCheck < 300) {
+      throw new BadRequestException('Check too frequent. Must wait 5 minutes.');
+    }
+
+    const startDate = new Date(session.startDate);
+    const elapsedSinceStart = Math.floor(
+      (now.getTime() - startDate.getTime()) / 1000,
+    );
+    const slotCount = Math.floor(elapsedSinceStart / 300);
+    const adjustedCheckDate = new Date(
+      startDate.getTime() + slotCount * 5 * 60 * 1000,
+    );
+
+    const lastPause = new Date(session.lastPauseDate);
+    const elapsedSeconds = Math.floor(
+      (now.getTime() - lastPause.getTime()) / 1000,
+    );
+    const updatedTimeLeft = Math.max(session.timeLeft - elapsedSeconds, 0);
+
+    session.lastCheckDate = adjustedCheckDate;
+    session.xpEarned += 1;
+
+    await this.sessionsDbProvider.saveSession(session);
+
+    return {
+      timeLeft: updatedTimeLeft,
+      status: session.status,
+      isPaused: session.isPaused,
+      isFinished: session.isFinished,
+      xpEarned: session.xpEarned,
+      lastCheckDate: adjustedCheckDate,
+    };
   }
 }

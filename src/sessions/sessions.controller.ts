@@ -38,4 +38,12 @@ export class SessionsController {
   ) {
     return this.sessionsService.resumeSession(sessionId, user.sub);
   }
+
+  @Post('/:sessionId/check')
+  checkSession(
+    @Param('sessionId', ParseIntPipe) sessionId: number,
+    @ActiveUser() user: ActiveUserData,
+  ) {
+    return this.sessionsService.checkSession(sessionId, user.sub);
+  }
 }
